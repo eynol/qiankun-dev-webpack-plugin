@@ -67,16 +67,16 @@ class QiankunDevConfigPlugin {
                 // 禁用 devtool，启用 SourceMapDevToolPlugin
                 compiler.options.output!.devtoolNamespace = `qinakun-app-${appName}`
                 compiler.options.devtool = false;
-                compiler.options.plugins?.push(
-                    new webpack.SourceMapDevToolPlugin(
-                        {
-                            //@ts-ignore maybe deprecated
-                            namespace: `qinakun-app-${appName}`,
-                            append: `\n//# sourceMappingURL=${protocol}//${host}:${port}/[url]`,
-                            filename: '[file].map',
-                        },
-                    )
-                );
+
+                new webpack.SourceMapDevToolPlugin(
+                    {
+                        //@ts-ignore maybe deprecated
+                        namespace: `qinakun-app-${appName}`,
+                        append: `\n//# sourceMappingURL=${protocol}//${host}:${port}/[url]`,
+                        filename: '[file].map',
+                    },
+                ).apply(compiler)
+
 
             }
         })
