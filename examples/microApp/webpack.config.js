@@ -3,7 +3,6 @@ const HtmlWebpakcPlugin = require('html-webpack-plugin')
 const path = require('path');
 
 const QiankunPlugin = require('../../lib/index')
-console.log(QiankunPlugin)
 
 module.exports = {
     entry: './index.js',

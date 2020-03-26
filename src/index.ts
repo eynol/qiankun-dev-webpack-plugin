@@ -7,7 +7,6 @@ import assert from 'assert';
 export interface QiankunDevOption {
     appName?: string,
     allowedHosts?: string[]
-    // masterHost: 'localhost'
 }
 class QiankunDevConfigPlugin {
 
@@ -63,19 +62,21 @@ class QiankunDevConfigPlugin {
             // source-map 跨域设置
             if (process.env.NODE_ENV === 'development' && port) {
                 // 变更 webpack-dev-server websocket 默认监听地址
-                // process.env.SOCKET_SERVER = `${protocol}://${host}:${port}/`;
+                // process.env.SOCKET_SERVER = `${protocol}//${host}:${port}/`;
 
                 // 禁用 devtool，启用 SourceMapDevToolPlugin
                 compiler.options.output!.devtoolNamespace = `qinakun-app-${appName}`
                 compiler.options.devtool = false;
-                new webpack.SourceMapDevToolPlugin(
-                    {
-                        //@ts-ignore maybe deprecated
-                        namespace: `qinakun-app-${appName}`,
-                        append: `\n//# sourceMappingURL=${protocol}//${host}:${port}/[url]`,
-                        filename: '[file].map',
-                    },
-                ).apply(compiler);
+                compiler.options.plugins?.push(
+                    new webpack.SourceMapDevToolPlugin(
+                        {
+                            //@ts-ignore maybe deprecated
+                            namespace: `qinakun-app-${appName}`,
+                            append: `\n//# sourceMappingURL=${protocol}//${host}:${port}/[url]`,
+                            filename: '[file].map',
+                        },
+                    )
+                );
 
             }
         })
