@@ -1,7 +1,7 @@
 {
   "name": "qiankun-dev-webpack-plugin",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "Modify your webpack configs to fit qiankun subapp development",
   "main": "./lib/index.js",
   "module": "./es/index.js",
   "types": "./es/index.d.ts",
@@ -33,5 +33,9 @@
   "peerDependencies": {
     "webpack": "^4.0.0",
     "html-webpack-plugin": "^4.0.0"
-  }
+  },
+  "files": [
+    "lib",
+    "es"
+  ]
 }
