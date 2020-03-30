@@ -31,7 +31,7 @@ class QiankunDevConfigPlugin {
     constructor(options: QiankunDevOption | undefined = {}) {
         this.options = options
     }
-    async  apply(compiler: Compiler) {
+    apply(compiler: Compiler) {
 
 
         // get app name configuration 
@@ -49,9 +49,6 @@ class QiankunDevConfigPlugin {
         } else {
             throw new Error(pkgPath + 'is not exist, you can config appName for this plugin')
         }
-
-
-        await modifyHtmlWebpackEntryProperty(compiler);
 
 
         compiler.hooks.environment.tap(PLUGIN_NAME, () => {
@@ -110,11 +107,14 @@ class QiankunDevConfigPlugin {
 
             }
         })
+
+        modifyHtmlWebpackEntryProperty(compiler);
+
+
     }
 }
 
-
-async function modifyHtmlWebpackEntryProperty(compiler: Compiler) {
+function modifyHtmlWebpackEntryProperty(compiler: Compiler) {
 
     // Get HtmlWebpackPlugin Class
     const htmlWebpakcPlugin = compiler.options.plugins?.find(
@@ -215,5 +215,4 @@ async function modifyHtmlWebpackEntryProperty(compiler: Compiler) {
 
 }
 
-// export default QiankunDevConfigPlugin
 module.exports = QiankunDevConfigPlugin

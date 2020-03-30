@@ -25,10 +25,7 @@ module.exports = {
             filename: 'app-2.html',
             chunks: ['second']
         }),
-        new QiankunPlugin({
-            appName: 'app1',
-
-        }),
+        new QiankunPlugin(),
         new webpack.ProgressPlugin((percent, msg, proc, atvM, mname) => {
             console.log(percent, msg, proc, atvM, mname)
         }),
