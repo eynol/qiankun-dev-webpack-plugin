@@ -1,13 +1,29 @@
 // const pluginName = 'QiankunDevConfigPlugin';
 
-import webpack, { Compiler } from 'webpack'
-import assert from 'assert';
+import webpack, { Compiler, /*Entry*/ } from 'webpack'
+import { join } from 'path';
+import fs from 'fs'
+import HtmlWebpackPluginType from 'html-webpack-plugin'
 
-
+const PLUGIN_NAME = 'QiankunDevPlugin';
 export interface QiankunDevOption {
     appName?: string,
-    allowedHosts?: string[]
 }
+
+interface EntryPoint {
+    name: string,
+    id: string,
+    chunks: Chunk[]
+}
+interface Chunk {
+    files: string[]
+}
+// enum EntryType {
+//     FILE,
+//     FILE_ARR,
+//     NAME_ARR
+// }
+
 class QiankunDevConfigPlugin {
 
     options: QiankunDevOption;
@@ -15,14 +31,33 @@ class QiankunDevConfigPlugin {
     constructor(options: QiankunDevOption | undefined = {}) {
         this.options = options
     }
-    apply(compiler: Compiler) {
+    async  apply(compiler: Compiler) {
 
-        compiler.hooks.environment.tap('QiankunDevConfigPlugin', () => {
 
-            assert(this.options.appName, 'Need config \'appName\' for this plugin');
-            const { appName } = this.options;
+        // get app name configuration 
+        let appName: string;
+        const pkgPath = join(compiler.context, 'package.json');
+        if (this.options.appName) {
+            appName = this.options.appName;
+        } else if (fs.existsSync(pkgPath)) {
+            try {
+                let pkg = require(pkgPath)
+                appName = pkg.name;
+            } catch (e) {
+                throw e
+            }
+        } else {
+            throw new Error(pkgPath + 'is not exist, you can config appName for this plugin')
+        }
+
+
+        await modifyHtmlWebpackEntryProperty(compiler);
+
+
+        compiler.hooks.environment.tap(PLUGIN_NAME, () => {
+
             compiler.options.output!.libraryTarget = 'umd';
-            compiler.options.output!.library = `qinakun-app-${appName}`;
+            compiler.options.output!.library = `${appName}-[name]`;
             compiler.options.output!.jsonpFunction = `webpackJsonp_${appName}`;
 
 
@@ -54,24 +89,19 @@ class QiankunDevConfigPlugin {
                 console.warn('如果master应用的页面，子应用的websocket连接不上，请配置 devServer.allowedHosts')
             }
 
-            // if (!devServer.allowedHosts) {
-            //     assert(this.options.allowedHosts, 'need config devServer.allowedHosts or config allowedHosts for this plugin')
-            //     // devServer.allowedHosts = this.options.allowedHosts || [];
-            // }
-
             // source-map 跨域设置
             if (process.env.NODE_ENV === 'development' && port) {
                 // 变更 webpack-dev-server websocket 默认监听地址
                 // process.env.SOCKET_SERVER = `${protocol}//${host}:${port}/`;
 
                 // 禁用 devtool，启用 SourceMapDevToolPlugin
-                compiler.options.output!.devtoolNamespace = `qinakun-app-${appName}`
+                compiler.options.output!.devtoolNamespace = `${appName}-[name]`
                 compiler.options.devtool = false;
 
                 new webpack.SourceMapDevToolPlugin(
                     {
                         //@ts-ignore maybe deprecated
-                        namespace: `qinakun-app-${appName}`,
+                        namespace: `${appName}-[name]`,
                         append: `\n//# sourceMappingURL=${protocol}//${host}:${port}/[url]`,
                         filename: '[file].map',
                     },
@@ -81,6 +111,108 @@ class QiankunDevConfigPlugin {
             }
         })
     }
+}
+
+
+async function modifyHtmlWebpackEntryProperty(compiler: Compiler) {
+
+    // Get HtmlWebpackPlugin Class
+    const htmlWebpakcPlugin = compiler.options.plugins?.find(
+        (plugin) => plugin.constructor.name === 'HtmlWebpackPlugin'
+    );
+
+    const HAS_HTML_WEBPACK_PLUGIN_ = !!htmlWebpakcPlugin;
+    let HtmlWebpackPlugin: typeof HtmlWebpackPluginType;
+    if (htmlWebpakcPlugin) {
+        HtmlWebpackPlugin = htmlWebpakcPlugin.constructor as typeof HtmlWebpackPluginType
+    }
+
+
+    // Find all Webpack entries
+    // let entryType: EntryType;
+    // let entries: Entry | string | string[] | undefined;
+    // if (typeof compiler.options.entry === 'function') {
+    //     entries = await compiler.options.entry()
+    // } else {
+    //     entries = compiler.options.entry;
+    // }
+
+    // if (typeof entries === 'undefined') {
+    //     throw new Error('entries is undefiend')
+    // }
+
+    // if (typeof entries === 'string') {
+    //     entryType = EntryType.FILE;
+    //     entries = ['main'];// webpack default
+    // } else if (Array.isArray(entries)) {
+    //     entryType = EntryType.FILE_ARR;
+    //     entries = ['main']; // webpack default
+    // } else {
+    //     entryType = EntryType.NAME_ARR;
+    // }
+
+    // const HtmlWebpackPlugin: HtmlWebpackPluginType = require((join(compiler.context, 'node_modules', 'html-webpack-plugin'))).default;
+
+    compiler.hooks.make.tap(PLUGIN_NAME, compilation => {
+        let hooks: HtmlWebpackPluginType.Hooks;
+        if (HAS_HTML_WEBPACK_PLUGIN_) {
+            hooks = HtmlWebpackPlugin.getHooks(compilation)
+
+
+            let chunkFiles: string[];
+            const getAllEntryChunkFiles = () => {
+
+                if (!chunkFiles) chunkFiles = [];
+
+                for (let entryPoint of (compilation.entrypoints as Map<string, EntryPoint>).values()) {
+                    entryPoint.chunks.forEach(chunk => {
+                        chunkFiles = chunkFiles.concat(chunk.files)
+                    })
+                    // switch (entryType) {
+                    //     case EntryType.FILE: {
+                    //         break
+                    //     }
+                    //     case EntryType.FILE_ARR: {
+                    //         break
+                    //     }
+                    //     case EntryType.NAME_ARR: {
+                    //         break
+                    //     }
+                    // }
+                    debugger
+                }
+
+                return chunkFiles;
+            }
+
+            // hooks.beforeEmit.tap(PLUGIN_NAME, ({ html, outputName, plugin }) => {
+            //     // dugger
+            //     return ({ html, outputName, plugin })
+            // })
+
+
+
+            hooks.alterAssetTags.tap(PLUGIN_NAME, ({ assetTags, outputName, plugin }) => {
+                const chunkfiles = getAllEntryChunkFiles();
+
+                assetTags.scripts.forEach(item => {
+                    const { src } = item.attributes;
+                    if (typeof src === 'string') {
+                        if (chunkfiles.some(filename => -1 < src.indexOf(filename))) {
+                            item.attributes.entry = true
+                        }
+                    }
+                })
+
+                return (({ assetTags, outputName, plugin }))
+            });
+
+        }
+
+
+    });
+
+
 }
 
 // export default QiankunDevConfigPlugin

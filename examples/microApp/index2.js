@@ -1,0 +1,1 @@
+export const nama = [234, 343, 43]

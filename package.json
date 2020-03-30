@@ -28,7 +28,10 @@
     "@types/webpack-dev-server": "^3.10.1",
     "@umijs/fabric": "^2.0.6",
     "father-build": "^1.17.2",
-    "tslib": "^1.11.1",
-    "webpack": "^4.42.1"
+    "tslib": "^1.11.1"
+  },
+  "peerDependencies": {
+    "webpack": "^4.0.0",
+    "html-webpack-plugin": "^4.0.0"
   }
 }

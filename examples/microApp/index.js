@@ -1,10 +1,11 @@
+import { foo } from './utils/index'
 
 document.body.insertAdjacentHTML('afterBegin', `
 <h2>MicroApp 2</h2>
 <div id="root"></div>
 `)
 
-console.log('haxx   xha')
+console.log('haxx   xha', foo)
 
 export const bootstrap = async (props) => {
     console.log(props);
@@ -19,7 +20,7 @@ export const unmount = async (props) => {
     console.log(props);
     console.log('unmoun    t  ddd')
 }
-if(module.hot){
+if (module.hot) {
     module.hot.accept()
 }
 export default { mount, unmount, bootstrap }
