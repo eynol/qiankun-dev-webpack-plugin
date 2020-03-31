@@ -1,7 +1,7 @@
 // const pluginName = 'QiankunDevConfigPlugin';
 
 import webpack, { Compiler, /*Entry*/ } from 'webpack'
-import { join } from 'path';
+import path from 'path';
 import fs from 'fs'
 import HtmlWebpackPluginType from 'html-webpack-plugin'
 
@@ -36,7 +36,7 @@ class QiankunDevConfigPlugin {
 
         // get app name configuration 
         let appName: string;
-        const pkgPath = join(compiler.context, 'package.json');
+        const pkgPath = path.resolve(process.cwd(), 'package.json');
         if (this.options.appName) {
             appName = this.options.appName;
         } else if (fs.existsSync(pkgPath)) {
