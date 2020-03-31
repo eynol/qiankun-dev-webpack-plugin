@@ -201,7 +201,7 @@ function modifyHtmlWebpackEntryProperty(compiler: Compiler, options?: QiankunDev
                 assetTags.scripts.forEach(item => {
                     const { src } = item.attributes;
                     if (typeof src === 'string') {
-                        const isChunkFile = chunkfiles.includes(src)
+                        const isChunkFile = chunkfiles.some(filename => -1 < src.indexOf(filename))
                         const entryRule = options && options.entryRule
 
                         if (isFunction(entryRule)) {
