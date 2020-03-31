@@ -22,12 +22,14 @@ module.exports = {
 |   参数名称    |    类型    |            默认值            | 说明     |
 | :-----------: | :--------: | :--------------------------: | :------- |
 | **`appName`** | `{String}` | `package.json`里的`name`属性 | 命名空间 |
+| **`entryRule`** | `(src: string) => boolean` | undefined | 声明 entry 标签 |
 
 ## 这个插件修改了什么
 
 1. 将 `output.libraryTarget` 设置为 `umd` 模块
 1. 在使用 `HtmlWebpackPlugin`插件时，给`entry`的 script 标签添加 `entry` 属性(如果你不使用 `HtmlWebpackPlugin` 或者将 `inject` 参数设置为 `false`， **必须** 自己手动给`entry`的 script 标签加上 `entry` 属性)
 1. 当`process.env.NODE_ENV`设置为 `development`时，设置 devServer 的 header 去处理 `CORS` 的跨域请求和 SourceMap 的 url
+1. 当声明了 `entryRule` 时，会根据 `entryRule(script.src)` 自动给对应 tag 加上 `attribute entry`，作用请见[这里](https://qiankun.umijs.org/faq/#application-died-in-status-loading-source-code-you-need-to-export-the-functional-lifecycles-in-xxx-entry)
 
 ## 其他可以手动设置的参数
 
