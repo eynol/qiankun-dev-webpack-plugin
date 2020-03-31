@@ -1,5 +1,5 @@
 export default {
-  target: 'browser',
+  target: 'node',
   entry: 'src/index.ts',
   esm: 'babel',
   cjs: 'babel',
