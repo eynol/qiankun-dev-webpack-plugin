@@ -8,6 +8,7 @@ import HtmlWebpackPluginType from 'html-webpack-plugin'
 const PLUGIN_NAME = 'QiankunDevPlugin';
 export interface QiankunDevOption {
     appName?: string,
+    entryRule?: (string) => boolean,
 }
 
 interface EntryPoint {
@@ -23,6 +24,8 @@ interface Chunk {
 //     FILE_ARR,
 //     NAME_ARR
 // }
+
+const isFunction = (v:any): boolean => v instanceof Function
 
 class QiankunDevConfigPlugin {
 
@@ -108,13 +111,13 @@ class QiankunDevConfigPlugin {
             }
         })
 
-        modifyHtmlWebpackEntryProperty(compiler);
+        modifyHtmlWebpackEntryProperty(compiler, this.options);
 
 
     }
 }
 
-function modifyHtmlWebpackEntryProperty(compiler: Compiler) {
+function modifyHtmlWebpackEntryProperty(compiler: Compiler, options?: QiankunDevOption) {
 
     // Get HtmlWebpackPlugin Class
     const htmlWebpakcPlugin = compiler.options.plugins?.find(
@@ -198,7 +201,12 @@ function modifyHtmlWebpackEntryProperty(compiler: Compiler) {
                 assetTags.scripts.forEach(item => {
                     const { src } = item.attributes;
                     if (typeof src === 'string') {
-                        if (chunkfiles.some(filename => -1 < src.indexOf(filename))) {
+                        const isChunkFile = chunkfiles.includes(src)
+                        const entryRule = options && options.entryRule
+
+                        if (isFunction(entryRule)) {
+                            item.attributes.entry = (entryRule as Function )(src)
+                        } else if (!isChunkFile) {
                             item.attributes.entry = true
                         }
                     }
