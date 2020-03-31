@@ -205,7 +205,7 @@ function modifyHtmlWebpackEntryProperty(compiler: Compiler, options?: QiankunDev
                         const entryRule = options && options.entryRule
 
                         if (isFunction(entryRule)) {
-                            item.attributes.entry = (entryRule as Function )(src)
+                            item.attributes.entry = !!(entryRule as Function)(src)
                         } else if (!isChunkFile) {
                             item.attributes.entry = true
                         }
