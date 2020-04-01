@@ -25,7 +25,7 @@ interface Chunk {
 //     NAME_ARR
 // }
 
-const isFunction = (v:any): boolean => v instanceof Function
+const isFunction = (v: any): boolean => v instanceof Function
 
 class QiankunDevConfigPlugin {
 
@@ -164,27 +164,31 @@ function modifyHtmlWebpackEntryProperty(compiler: Compiler, options?: QiankunDev
 
             let chunkFiles: string[];
             const getAllEntryChunkFiles = () => {
+                if (!chunkFiles) {
+                    chunkFiles = [];
 
-                if (!chunkFiles) chunkFiles = [];
-
-                for (let entryPoint of (compilation.entrypoints as Map<string, EntryPoint>).values()) {
-                    entryPoint.chunks.forEach(chunk => {
-                        chunkFiles = chunkFiles.concat(chunk.files)
-                    })
-                    // switch (entryType) {
-                    //     case EntryType.FILE: {
-                    //         break
-                    //     }
-                    //     case EntryType.FILE_ARR: {
-                    //         break
-                    //     }
-                    //     case EntryType.NAME_ARR: {
-                    //         break
-                    //     }
-                    // }
-                    debugger
+                    for (let entryPoint of (compilation.entrypoints as Map<string, EntryPoint>).values()) {
+                        entryPoint.chunks.forEach(chunk => {
+                            chunk.files?.forEach(filename => {
+                                if (filename.match(/\.map$/i)) return;// remove sourcemap file
+                                if (chunkFiles.includes(filename)) return; // deduplicate
+                                chunkFiles.push(filename);
+                            })
+                        })
+                        // switch (entryType) {
+                        //     case EntryType.FILE: {
+                        //         break
+                        //     }
+                        //     case EntryType.FILE_ARR: {
+                        //         break
+                        //     }
+                        //     case EntryType.NAME_ARR: {
+                        //         break
+                        //     }
+                        // }
+                        // debugger
+                    }
                 }
-
                 return chunkFiles;
             }
 
@@ -198,20 +202,29 @@ function modifyHtmlWebpackEntryProperty(compiler: Compiler, options?: QiankunDev
             hooks.alterAssetTags.tap(PLUGIN_NAME, ({ assetTags, outputName, plugin }) => {
                 const chunkfiles = getAllEntryChunkFiles();
 
-                assetTags.scripts.forEach(item => {
+                // Get sync scripts injected to html 
+                const { scripts } = assetTags;
+                let { length } = scripts;
+                // Find entry script from right
+                while (length--) {
+                    let item = scripts[length]
                     const { src } = item.attributes;
+
                     if (typeof src === 'string') {
-                        const isChunkFile = chunkfiles.some(filename => -1 < src.indexOf(filename))
+                        const isChunkFile = () => chunkfiles.some(filename => -1 < src.indexOf(filename))
                         const entryRule = options && options.entryRule
 
-                        if (isFunction(entryRule)) {
-                            item.attributes.entry = !!(entryRule as Function)(src)
-                        } else if (!isChunkFile) {
+                        if (entryRule !== undefined && isFunction(entryRule)) {
+                            item.attributes.entry = entryRule(src) //  user custom entry rule
+                        } else if (isChunkFile()) {
                             item.attributes.entry = true
                         }
-                    }
-                })
 
+                        if (item.attributes.entry) {
+                            break // Each html file only has one entry
+                        }
+                    }
+                }
                 return (({ assetTags, outputName, plugin }))
             });
 
