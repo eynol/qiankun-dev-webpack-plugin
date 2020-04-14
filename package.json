@@ -7,7 +7,8 @@
   "types": "./es/index.d.ts",
   "scripts": {
     "build": "father-build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --runInBand --verbose --coverage",
+    "test:watch": "jest --runInBand --watch"
   },
   "repository": {
     "type": "git",
@@ -24,15 +25,39 @@
     "@babel/runtime": "^7.9.2"
   },
   "devDependencies": {
+    "@types/jest": "^25.2.1",
     "@types/webpack": "^4.41.8",
     "@types/webpack-dev-server": "^3.10.1",
     "@umijs/fabric": "^2.0.6",
     "father-build": "^1.17.2",
+    "jest": "^25.3.0",
+    "ts-jest": "^25.3.1",
     "tslib": "^1.11.1"
   },
   "peerDependencies": {
     "webpack": "^4.0.0",
     "html-webpack-plugin": "^4.0.0"
+  },
+  "jest": {
+    "watchPathIgnorePatterns": [
+      "<rootDir>/examples",
+      "<rootDir>/es",
+      "<rootDir>/lib",
+      "<rootDir>/test/.tmp"
+    ],
+    "testEnvironment": "node",
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "ts",
+      "tsx"
+    ],
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testMatch": [
+      "<rootDir>/test/**/?(*.)(spec|test).ts?(x)"
+    ]
   },
   "files": [
     "lib",

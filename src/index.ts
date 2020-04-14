@@ -50,7 +50,7 @@ class QiankunDevConfigPlugin {
                 throw e
             }
         } else {
-            throw new Error(pkgPath + 'is not exist, you can config appName for this plugin')
+            throw new Error(pkgPath + ' is not exist, you can config appName for this plugin')
         }
 
 
@@ -69,10 +69,13 @@ class QiankunDevConfigPlugin {
 
             const port = process.env.PORT || devServer.port;
             const protocol = (process.env.HTTPS || devServer.https) ? 'https:' : 'http:'
-            const host = devServer.host;
+            const host = devServer.host || 'localhost';
 
             // 配置 publicPath，支持 hot update
             if (process.env.NODE_ENV === 'development' && port) {
+                if (port === undefined) {
+                    throw new Error('please config devServer.port or PORT env to config sourcemap\'s public path')
+                }
                 compiler.options.output!.publicPath = `${protocol}//${host}:${port}/`;
             }
 
@@ -85,23 +88,19 @@ class QiankunDevConfigPlugin {
                 "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS"
             })
 
-            if (process.env.NODE_ENV === 'development' && port) {
-                console.warn('如果master应用的页面，子应用的websocket连接不上，请配置 devServer.allowedHosts')
-            }
-
             // source-map 跨域设置
             if (process.env.NODE_ENV === 'development' && port) {
                 // 变更 webpack-dev-server websocket 默认监听地址
                 // process.env.SOCKET_SERVER = `${protocol}//${host}:${port}/`;
 
                 // 禁用 devtool，启用 SourceMapDevToolPlugin
-                // compiler.options.output!.devtoolNamespace = `${appName}` // default to use output.Library
+                compiler.options.output!.devtoolNamespace = `${appName}-[name]` // default to use output.Library
                 compiler.options.devtool = false;
 
                 new webpack.SourceMapDevToolPlugin(
                     {
                         //@ts-ignore maybe deprecated
-                        // namespace: `${appName}`,
+                        namespace: `${appName}-[name]`,
                         append: `\n//# sourceMappingURL=${protocol}//${host}:${port}/[url]`,
                         filename: '[file].map',
                     },
@@ -112,8 +111,6 @@ class QiankunDevConfigPlugin {
         })
 
         modifyHtmlWebpackEntryProperty(compiler, this.options);
-
-
     }
 }
 

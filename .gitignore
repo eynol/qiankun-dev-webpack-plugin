@@ -3,3 +3,5 @@ es/
 node_modules/
 .DS_store
 *.log
+.tmp
+coverage
