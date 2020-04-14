@@ -57,7 +57,7 @@ class QiankunDevConfigPlugin {
         compiler.hooks.environment.tap(PLUGIN_NAME, () => {
 
             compiler.options.output!.libraryTarget = 'umd';
-            compiler.options.output!.library = `${appName}`;
+            compiler.options.output!.library = `${appName}-[name]`;
             compiler.options.output!.jsonpFunction = `webpackJsonp_${appName}`;
 
 
@@ -95,13 +95,13 @@ class QiankunDevConfigPlugin {
                 // process.env.SOCKET_SERVER = `${protocol}//${host}:${port}/`;
 
                 // 禁用 devtool，启用 SourceMapDevToolPlugin
-                compiler.options.output!.devtoolNamespace = `${appName}`
+                // compiler.options.output!.devtoolNamespace = `${appName}` // default to use output.Library
                 compiler.options.devtool = false;
 
                 new webpack.SourceMapDevToolPlugin(
                     {
                         //@ts-ignore maybe deprecated
-                        namespace: `${appName}`,
+                        // namespace: `${appName}`,
                         append: `\n//# sourceMappingURL=${protocol}//${host}:${port}/[url]`,
                         filename: '[file].map',
                     },
